@@ -1,0 +1,47 @@
+<html>
+<head>
+	<title></title>
+	<script type="text/javascript" language="javascript">
+		var btn1, btn2;
+		
+		// This handler will dispatch the event by using the button ID
+		function onButtonClicked(btn)
+		{
+		    switch (btn.buttonID) {
+		        case btn1:
+		            // Handle button 1 click
+		            // Trigger Twitter sharing functions here
+		            alert("点击第一个按钮");
+		            break;
+		        case btn2:
+		            // Handle button 2 click
+		            // Trigger Facebook sharing functions here
+		            alert("点击第二个按钮");
+		            break;
+		    }
+		}
+		 
+		// Here we're storing the button ID in our variables to be referenced in the callback
+		// We've assigned each button its own icon and set the tooltip text
+		btn1 = window.external.msSiteModeAddThumbBarButton("/dsuiext.02.ico","Twitter");
+		btn2 = window.external.msSiteModeAddThumbBarButton("/feedback.ico","Facebook");
+		 
+		// Add an event listener
+		//document.addEventListener("msthumbnailclick", IEPin.onButtonClicked, false);
+		 
+		// To display the buttons we call msSiteModeShowThumbBar
+		// NOTE: These toolbar buttons will exist for as long as the pinned site is open
+		window.external.msSiteModeShowThumbBar();
+		
+		
+		window.setTimeout(function () {
+		    window.external.msSiteModeSetIconOverlay("feedback.ico", "Example Notification");
+		    window.external.msSiteModeActivate();
+		}, 2000);
+	</script>
+</head>
+
+<body>
+	dsjfklsdjfkljskljl
+</body>
+<html>

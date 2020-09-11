@@ -1,0 +1,664 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Web Sockets Demo - Jigsaw Puzzle</title>
+    <script type="text/javascript" src="Script/jquery-1.3.1.js"></script>
+    <script type="text/javascript" src="Script/json2.js"></script>
+    <script type="text/javascript" src="Script/jquery.slws.js"></script>
+    <script type="text/javascript" src="Script/dragdrop.js"></script>
+    <script type="text/javascript" src="Script/fn.js"></script>
+    <script type="text/javascript" src="Script/gameScript.js"></script>
+    <script type="text/javascript" language="JavaScript" src="Script/prettify.js"></script> 	
+	<script type="text/javascript" language="JavaScript" src="Script/jquery.modaldialog.js"> </script> 
+
+    <link type="text/css" rel="stylesheet" href="Style/style.css" />
+    <link type="text/css" rel="stylesheet" href="Style/prettify.css" /> 
+    <link type="text/css" rel="stylesheet" href="Style/jquery.modaldialog.css" />
+ 
+	
+
+    <script type="text/jscript">
+        // This is a simple demo game where two browsers communicate through silverlight component using websocket protocol
+        // between client and server. This game makes use of 4 methods for the websocket connection object.
+        // 1) OnOpen() 2) OnClose() and 3) OnMessage() 4) send()
+        // Silverlight websocket's ready() event tries to open the websocket connection between client and service.
+        // 1) if it does not get opened successfully, onClose() gets called on the connection and it gets closed. 
+        // 2) If it opens the websocket connection successfully then onOpen() gets called and websocket connection is opened and
+        //  now connection is ready for sending to and getting messages from the server.
+        // 3) When it receives any message it's OnMessage() event gets invoked.
+        // 4) When it wants to send any message it uses connection.send().
+
+        // This game uses customized messaging between client and service. So when OnMessage() gets called then depending
+        // on the message type client takes action and sends back messages to the server if needs to be sent. 
+        // Please look at the design document to see in more detail about these different messages.
+
+        // Configurable item start.
+
+        // Sample URL created using three parameters below will be "ws://localhost:4502/wsdemogame"
+        var MSG_FREQUENCY = 1; // How many times once to send the coordinates
+        var DELAY_TIME = 100; // Delay between two messages so that the order in which they are sent does not change.
+        var LONG_DELAY_TIME = 300; // Long Delay between two messages so that the order in which they are sent does not change.
+        var WIN_DELAY_TIME = 1000; // Time between cheat win and win message.
+        //var SMOOTHEN_MOVE_TIME = 50; // Animate smooth move time.
+        var WIN_KEY = 45 // Insert is the current cheat key.
+        // Configurable items end.
+
+        var gameDiv, loginDiv, playerDiv;
+        var form, state;
+
+        var logError = '';
+        var selectorMessageText = '';
+        var gameMessageText = '';
+        var loginText = '';
+
+        var currentX = 0, currentY = 0, mouseMovementCount = 0;
+        var lastOtherMousePositionX = currentX, lastOtherMousePositionY = currentY;
+
+        var homeScore, awayScore;
+        var hScore = 0, aScore = 0;
+
+        var awayPlayer = '';
+
+        var gameFinished = false;
+
+        var gamefinishMessage = 'Game finished: ';
+        var serverResponseError = 'Server response error.';
+        var playingMessage = 'You are now playing with ';
+        var loginFailure = 'Log in failure';
+        var restartGameMessage = 'Please start game with another player.';
+        var logoutMessage = 'has logged out.';
+
+        var homeSelectTileText = "Send Select Tile: ";
+        var homeAssignTileText = "Send Drop Tile: ";
+        var homeMoveTileText = "Send Tile Move: ";
+        var homeUpdateScoreText = "Send Score: ";
+        var awaySelectTileText = "Receive Select Tile: ";
+        var awayAssignTileText = "Receive Drop Tile: ";
+        var awayMoveTileText = "Receive Tile Move: ";
+        var awayUpdateScoreText = "Receive Score: ";
+
+        function sendMessage(message) {
+            if (conn.readyState == 1) {
+                conn.send(message);
+            }
+            else {
+                showLoggedOutState(serverResponseError);
+            }
+        }
+
+        document.onkeyup = KeyCheck;
+
+        $(document).ready(function () {
+
+            matchTiles();
+            initialize();
+            displayTraceText(null);
+
+            loginDiv = document.getElementById('loginGrid'),
+            playerDiv = document.getElementById('playerGrid'),
+            gameDiv = document.getElementById('mainGrid'),
+
+            logError = document.getElementById('logInError'),
+            loginText = document.getElementById('loginName'),
+            gameMessageText = document.getElementById('gameMessage'),
+            selectorMessageText = document.getElementById('SelectPlayerMessage'),
+
+            form = loginText.form,
+            conn = {},
+            state = document.getElementById('status');
+
+            homeScore = document.getElementById('homeScore'),
+            awayScore = document.getElementById('awayScore'),
+
+            $.slws.ready(function () {
+                if (window.WebSocketDraft === undefined) {
+                    state.innerHTML = 'Sockets not supported';
+                    state.className = 'fail';
+                } else {
+                    state.onclick = function () {
+                        if (conn.readyState !== 1) {
+                            conn.close();
+                            setTimeout(function () {
+                                openConnection();
+                            }, 250);
+                        }
+                    };
+                    $(form).submit(function (event) {
+                        event.preventDefault();
+
+                        // Send Login:Name message to the server.
+                        sendMessage('Login:' + loginText.value);
+                    });
+
+                    openConnection();
+                }
+            })
+
+            $('#silverLight').css('display', 'none');
+        });
+
+        function openConnection() {
+            if (conn.readyState === undefined || conn.readyState > 1) {
+                conn = new WebSocketDraft('ws://' + window.location.hostname + ':4502/jigsawpuzzle');
+
+                conn.onopen = function () {
+                    state.className = 'success';
+                    state.innerHTML = 'Socket open';
+                };
+
+                conn.onmessage = function (event) {
+                    var message = event.data;
+
+                    var messageParts = message.split(":");
+                    var messageResults = {};
+
+                    switch (messageParts[0]) {
+                        case 'LoginResponse':
+                            messageResults = messageParts[1].split(';');
+                            logError.innerHTML = '';
+                            if (messageResults[0] == 'Failure') {
+                                switch (messageResults[1]) {
+                                    case 'LoginLimitReached':
+                                        logError.innerHTML = loginFailure + ': Already maximum number of allowed users are logged in.';
+                                        break;
+                                    case 'LoginNameTaken':
+                                        logError.innerHTML = loginFailure + ': This name is already in use. Please use another name.';
+                                        break;
+                                    case 'LoginNameEmpty':
+                                        logError.innerHTML = loginFailure + ': Login name cannot be empty.';
+                                        break;
+                                    default:
+                                        logError.innerHTML = loginFailure + '.';
+                                        break;
+                                }
+                            }
+                            else {
+                                // Successful result.
+                                loginDiv.style.display = 'none';
+                                playerDiv.style.display = 'none';
+                                sendMessage('GetPlayersList');
+                            }
+
+                            break;
+
+                        case 'JoinPlayerList':
+                            if ('block' == playerDiv.style.display) {
+                                messageResults = messageParts[1].split(';');
+                                updatePlayerList(messageResults, 1);
+                            }
+
+                            break;
+
+                        case 'RemoveFromPlayerList':
+                            if ('block' == playerDiv.style.display) {
+                                messageResults = messageParts[1].split(';');
+                                updatePlayerList(messageResults, 2);
+                            }
+
+                            break;
+
+                        case 'GetPlayersListResponse':
+                            playerDiv.style.display = 'block';
+                            messageResults = messageParts[1].split(';');
+                            selectorMessageText.innerHTML = '';
+
+                            updatePlayerList(messageResults, 0);
+
+                            break;
+
+                        case 'SelectPlayerResponse':
+                            messageResults = messageParts[1].split(';');
+                            selectorMessageText.innerHTML = '';
+                            if (messageResults[0] == 'Failure') {
+                                switch (messageResults[1]) {
+                                    case 'BusyPlayer':
+                                        selectorMessageText.innerHTML = 'Player ' + messageResults[2] + ' is already playing.';
+                                        break;
+
+                                    case 'PlayerExist':
+                                        selectorMessageText.innerHTML = 'You already have a player.';
+                                        break;
+
+                                    case 'PlayerDoesNotExist':
+                                        selectorMessageText.innerHTML = 'Player ' + messageResults[2] + ' ' + logoutMessage;
+                                        break;
+
+                                    default:
+                                        selectorMessageText.innerHTML = 'Player does not exist.';
+                                        break;
+                                }
+                            }
+                            else {
+                                // Successful result.
+                                playerDiv.style.display = 'none';
+                            }
+
+                            break;
+
+                        case 'FixedPlayerResponse':
+                            showGameStartState();
+
+                            messageResults = messageParts[1].split(';');
+                            awayPlayer = messageResults[0];
+
+                            homeScore.innerHTML = "<span>" + hScore + "</span>";
+                            awayScore.innerHTML = "<span>" + aScore + "</span>";
+
+                            $('#hmLabel').text(loginText.value);
+                            $('#awyLabel').text(awayPlayer);
+
+                            sendMessage('UILoadComplete');
+                            displayTraceText(playingMessage + awayPlayer);
+                            $('.content').css('background', '#FFF6E2');
+                            break;
+
+                        case 'CompleteUILoad':
+                            gameDiv.style.display = 'block';
+
+                            awayPlayer = messageParts[1];
+
+                            $('#hmLabel').text(loginText.value);
+                            $('#awyLabel').text(awayPlayer);
+
+                            displayTraceText(playingMessage + awayPlayer);
+                            $('.content').css('background', '#D6E6F3');
+                            homeScore.innerHTML = "<span>" + hScore + "</span>";
+                            awayScore.innerHTML = "<span>" + aScore + "</span>";
+
+                            break;
+
+                        case 'UILoadCompleteResponse':
+                            messageResults = messageParts[1].split(';');
+                            if (messageResults[0] == 'Failure') {
+                                gameMessageText.innerHTML = serverResponseError;
+                                showLoggedInState('');
+                            }
+
+                            break;
+
+                        case 'SelectTileResponse':
+                            messageResults = messageParts[1].split(';');
+                            if (messageResults[0] == 'Failure') {
+                                gameMessageText.innerHTML = serverResponseError;
+                                showLoggedInState('');
+                            }
+
+                            break;
+
+                        case 'SetTile':
+                            messageResults = messageParts[1].split(';');
+                            var tileId = '.' + messageResults[0];
+                            $(tileId).css('border-color', 'orange');
+                            displayTraceText(awaySelectTileText + messageResults[0]);
+                            break;
+
+                        case 'SendJigSawCoordinatesResponse':
+                            messageResults = messageParts[1].split(';');
+                            if (messageResults[0] == 'Failure') {
+                                gameMessageText.innerHTML = serverResponseError;
+                                showLoggedInState('');
+                            }
+
+                            break;
+
+                        case 'FixJigSawCoordinates':
+                            messageResults = messageParts[1].split(';');
+                            var tileId = '.' + messageResults[0];
+                            var left = parseInt(messageResults[1]);
+                            var top = parseInt(messageResults[2]);
+
+                            //smoothenMove(tileId, left, top, SMOOTHEN_MOVE_TIME);
+                            $(tileId).css('left', left);
+                            $(tileId).css('top', top);
+
+                            $(tileId).css('z-index', 200);
+                            $(tileId).children().attr('disabled', 'disabled');
+                            $(tileId).children().css('filter', 'progid:DXImageTransform.Microsoft.BasicImage(grayScale=1)');
+                            displayTraceText(awayMoveTileText + left + ', ' + top);
+                            break;
+
+                        case 'ResetTileBack':
+                            messageResults = messageParts[1].split(';');
+                            var tileId = '.' + messageResults[0];
+
+                            $(tileId).css('border-color', '#C0C0C0');
+                            $(tileId).css('z-index', 0);
+                            $(tileId).children().removeAttr('disabled');
+                            $(tileId).children().css('filter', '');
+                            break;
+
+                        case 'ResetTileResponse':
+                            messageResults = messageParts[1].split(';');
+                            if (messageResults[0] == 'Failure') {
+                                gameMessageText.innerHTML = serverResponseError;
+                                showLoggedInState('');
+                            }
+
+                            break;
+
+                        case 'DisableTileFromMove':
+                            messageResults = messageParts[1].split(';');
+                            var tileId = '.' + messageResults[0];
+                            $(tileId).children().attr('disabled', 'disabled');
+                            $(tileId).css('cursor', 'auto');
+                            $(tileId).children().css('cursor', 'auto');
+                            break;
+
+                        case 'DisableTileResponse':
+                            messageResults = messageParts[1].split(';');
+                            if (messageResults[0] == 'Failure') {
+                                gameMessageText.innerHTML = serverResponseError;
+                                showLoggedInState('');
+                            }
+
+                            break;
+
+                        case 'AssignTileToCell':
+                            messageResults = messageParts[1].split(';');
+                            var cellId = '#' + messageResults[0];
+                            var tileId = messageResults[1];
+
+                            ClearBinding(tileId);
+
+                            if (cellId != '#') {
+                                $(cellId).data('assignedTile', tileId);
+                            }
+
+                            tileId = '.' + tileId;
+                            $(tileId).css('border-color', '#C0C0C0');
+                            $(tileId).css('z-index', 0);
+                            $(tileId).children().removeAttr('disabled');
+                            $(tileId).children().css('filter', '');
+                            if (messageResults[0]) {
+                                displayTraceText(awayAssignTileText + messageResults[1] + ' at ' + messageResults[0]);
+                            }
+                            else {
+                                displayTraceText(awayAssignTileText + messageResults[1] + ' at assembly area');
+                            }
+                            break;
+
+                        case 'AssignTileResponse':
+                            messageResults = messageParts[1].split(';');
+                            if (messageResults[0] == 'Failure') {
+                                gameMessageText.innerHTML = serverResponseError;
+                                showLoggedInState('');
+                            }
+
+                            break;
+
+                        case 'UpdateScoreResponse':
+                            break;
+
+                        case 'FixPlayerScore':
+                            aScore = messageParts[1];
+                            awayScore.innerHTML = "<span>" + aScore + "</span>";
+                            displayTraceText(awayUpdateScoreText + aScore);
+                            break;
+
+                        case 'GameComplete':
+                        case 'GameCompleteResponse':
+
+                            gameFinished = true;
+
+                            if (hScore > aScore) {
+                                $.modaldialog.success(gamefinishMessage + 'You Won!!', {
+                                    title: 'Congratulations!'
+                                });
+                            }
+                            else if (hScore < aScore) {
+                                $.modaldialog.success(gamefinishMessage + 'You got pawned.', {
+                                    title: 'Too bad!'
+                                });
+                            }
+                            else {
+                                $.modaldialog.success(gamefinishMessage + 'It is a tie!!', {
+                                    title: 'Can you believe it!'
+                                });
+                            }
+
+                            restartGame();
+
+                            break;
+                        case 'PlayerDied':
+                            var playerDiedMessage = 'Player ' + messageParts[1] + ' ' + logoutMessage + ' ' + restartGameMessage;
+
+                            gameFinished = true;
+
+                            gameMessageText.innerHTML = playerDiedMessage;
+                            showLoggedInState('');
+
+                            sendMessage('GetPlayersList');
+                            break;
+                    }
+                };
+
+                conn.onclose = function (event) {
+                    state.className = 'fail';
+                    state.innerHTML = 'Socket closed';
+
+                    // Put the logic here for logged out state.
+                    showLoggedOutState(serverResponseError);
+                };
+            }
+        }
+
+    </script>
+</head>
+<body>
+    <bgsound id="sound">
+    <div>
+        <div class="content">
+            <div class="titleGrid">
+                <!--<h1>Web Sockets Demo - Jigsaw Puzzle</h1>-->
+                <p id="status" class="fail">
+                    Socket not connected.</p>
+                <!--<p>
+                    The purpose of this game is to demonstrate websocket communication between browsers
+                    through a silverlight component. This silverlight component implements the websockets
+                    element introduced by HTML5. Drag and drop tiles to their matching boxes to score
+                    a point. Game finishes when the puzzle is solved.</p>-->
+            </div>
+            <div id="loginGrid" class="loginGrid">
+                <p>
+                    To play the game, please login first using your nickname.
+                </p>
+                <form action="">
+                <input type="text" id="loginName" />
+                <input type="submit" id="logInButton" value="Log In &raquo;" />
+                <p id="logInError" class="offline">
+                </p>
+                </form>
+            </div>
+            <div id="playerGrid" style="display: none" class="playerGrid">
+                <h3>
+                    Choose a Player</h3>
+                <ul id="playerList">
+                    <!-- contains players list -->
+                </ul>
+                <p id="SelectPlayerMessage" class="offline">
+                </p>
+            </div>
+            <div id="mainGrid" style="display: none">
+                <div class="scoreGrid">
+                    <div class="home">
+                        <label id="hmLabel">
+                            Home
+                        </label>
+                        <label id="homeScore">
+                            0</label>
+                    </div>
+                    <div class="away">
+                        <label id="awyLabel">
+                            Away
+                        </label>
+                        <label id="awayScore">
+                            0</label>
+                    </div>
+                </div>
+                <div class="gameGrid">
+                    <div class="leftGrid">
+                        <table class="leftTable">
+                            <tr>
+                                <td id="tiles0">
+                                </td>
+                                <td id="tiles1">
+                                </td>
+                                <td id="tiles2">
+                                </td>
+                                <td id="tiles3">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td id="tiles4">
+                                </td>
+                                <td id="tiles5">
+                                </td>
+                                <td id="tiles6">
+                                </td>
+                                <td id="tiles7">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td id="tiles8">
+                                </td>
+                                <td id="tiles9">
+                                </td>
+                                <td id="tiles10">
+                                </td>
+                                <td id="tiles11">
+                                </td>
+                            </tr>
+                            <tr>
+                                <td id="tiles12">
+                                </td>
+                                <td id="tiles13">
+                                </td>
+                                <td id="tiles14">
+                                </td>
+                                <td id="tiles15">
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="rightGrid">
+                        <table class="rightTable">
+                            <tr>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                                <td>
+                                </td>
+                            </tr>
+                        </table>
+                        <div class="tiles0">
+                            <div class="gb" style="background-image: url('Images/Tiles10.png');">
+                            </div>
+                        </div>
+                        <div class="tiles1">
+                            <div class="gb" style="background-image: url('Images/Tiles11.png');">
+                            </div>
+                        </div>
+                        <div class="tiles2">
+                            <div class="gb" style="background-image: url('Images/Tiles12.png');">
+                            </div>
+                        </div>
+                        <div class="tiles3">
+                            <div class="gb" style="background-image: url('Images/Tiles13.png');">
+                            </div>
+                        </div>
+                        <div class="tiles4">
+                            <div class="gb" style="background-image: url('Images/Tiles14.png');">
+                            </div>
+                        </div>
+                        <div class="tiles5">
+                            <div class="gb" style="background-image: url('Images/Tiles15.png');">
+                            </div>
+                        </div>
+                        <div class="tiles6">
+                            <div class="gb" style="background-image: url('Images/Tiles9.png');">
+                            </div>
+                        </div>
+                        <div class="tiles7">
+                            <div class="gb" style="background-image: url('Images/Tiles8.png');">
+                            </div>
+                        </div>
+                        <div class="tiles8">
+                            <div class="gb" style="background-image: url('Images/Tiles7.png');">
+                            </div>
+                        </div>
+                        <div class="tiles9">
+                            <div class="gb" style="background-image: url('Images/Tiles6.png');">
+                            </div>
+                        </div>
+                        <div class="tiles10">
+                            <div class="gb" style="background-image: url('Images/Tiles5.png');">
+                            </div>
+                        </div>
+                        <div class="tiles11">
+                            <div class="gb" style="background-image: url('Images/Tiles4.png');">
+                            </div>
+                        </div>
+                        <div class="tiles12">
+                            <div class="gb" style="background-image: url('Images/Tiles3.png');">
+                            </div>
+                        </div>
+                        <div class="tiles13">
+                            <div class="gb" style="background-image: url('Images/Tiles2.png');">
+                            </div>
+                        </div>
+                        <div class="tiles14">
+                            <div class="gb" style="background-image: url('Images/Tiles1.png');">
+                            </div>
+                        </div>
+                        <div class="tiles15">
+                            <div class="gb" style="background-image: url('Images/Tiles0.png');">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="messageGrid">
+                    <p id="gameMessage" class="offline">
+                    </p>
+                    <div id="msg" class="message"></div>
+                </div>
+                <div class="imageGrid">
+                    <img class="image" src="Images/IE-symbol_rgb.png" alt="Desert" />
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

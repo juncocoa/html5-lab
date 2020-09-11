@@ -1,0 +1,79 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+	<title>HTML5+CSS3 动画研究</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+	<link href="index.css" type="text/css" rel="stylesheet" />
+    <script type="text/javascript">
+        function TestLeft() {
+            setTimeout(function () {
+                document.getElementById("div").style.transform = "perspective(500px) rotateY(30deg)";
+                document.getElementById("div").style.marginLeft = "-369px";
+            }, 2000);
+            
+            document.getElementById("div").style.opacity = "1";
+            document.getElementById("div").style.marginTop = "50px";
+            document.getElementById("div").style.width = "500px";
+        }
+        function TestRight() {
+            setTimeout(function () {
+                document.getElementById("div").style.transform = "perspective(500px) rotateY(-30deg)";
+                document.getElementById("div").style.marginLeft = "369px";
+            }, 2000);
+
+            document.getElementById("div").style.opacity = "1";
+            document.getElementById("div").style.marginTop = "50px";
+            document.getElementById("div").style.width = "500px";
+        }
+        function Test2() {
+            document.getElementById("div").style.transform = "perspective(500px) rotateY(0deg)";
+            document.getElementById("div").style.marginLeft = "0px";
+            setTimeout(function () {
+                document.getElementById("div").style.opacity = "0";
+                document.getElementById("div").style.marginTop = "0px";
+                document.getElementById("div").style.width = "300px";
+            }, 2000);
+        }
+        function TestFall() {
+            setTimeout(function () {
+                document.getElementById("div").style.transform = "perspective(500px) rotateX(30deg)";
+                document.getElementById("div").style.marginLeft = "0px";
+            }, 2000);
+
+            document.getElementById("div").style.opacity = "1";
+            document.getElementById("div").style.marginTop = "50px";
+            document.getElementById("div").style.width = "500px";
+        }
+        function TestFlight() {
+            setTimeout(function () {
+                document.getElementById("div").style.transform = "perspective(500px) rotateX(50deg)";
+            }, 2000);
+
+            document.getElementById("div").style.opacity = "0";
+            document.getElementById("div").style.marginTop = "0px";
+            document.getElementById("div").style.width = "300px";
+        }
+        var x = 0;
+        function touchStart(e){
+        	x = e.changedTouches[0].pageY;
+        }
+        function touchEnd(e){
+        	if(x > e.changedTouches[0].pageY){
+        		TestFlight();
+        	}else{
+        		TestFall();
+        	}
+        }
+    </script>
+</head>
+<body ontouchstart="touchStart(event)" ontouchend="touchEnd(event)">
+    <div style="float:left;margin-top: -102px;">
+        <input type="button" onclick="TestLeft()" value="执行动画（左）" />
+        <input type="button" onclick="TestRight()" value="执行动画（右）" />
+        <input type="button" onclick="Test2()" value="还原隐藏" />
+        <input type="button" onclick="TestFall()" value="倒下" />
+        <input type="button" onclick="TestFlight()" value="飞行" />
+    </div>
+    <video id="div" src="Test.mp4" controls="controls" class="div" loop="loop" autoplay="autoplay"></video>
+</body>
+</html>

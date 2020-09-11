@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tt xmlns="http://www.w3.org/ns/ttml" xml:lang="en" >
+  <body>
+    <div>
+      <p begin="0.020s" end="4.399s">Today you have many ways to manage your files with the cloud.</p>
+      <p begin="4.400s" end="8.749s">Some services let you sync files so you have access from all your devices.</p>
+      <p begin="6.983s" end="10.226s">With more support for HTML5 technology</p>
+      <p begin="8.750s" end="11.099s">Others let you share files.</p>
+      <p begin="11.100s" end="14.550s">And still more let you work together online.</p>
+      <p begin="14.551s" end="17.200s">But now there's one that lets you do it all.</p>
+      <p begin="18.000s" end="20.500s">Welcome to Microsoft SkyDrive.</p>
+      <p begin="21.200s" end="22.400s">Meet Stephen.</p>
+      <p begin="22.401s" end="25.500s">He's a food blogger and SkyDrive user.</p>
+      <p begin="25.501s" end="29.770s">Stephen has just ordered the best pizza he's ever had.</p>
+      <p begin="29.771s" end="33.030s">He uses his phone to snap pictures and jot down notes</p>
+      <p begin="46.124s" end="48.602s">and see visual feedback indicating the progress.</p>
+      <p begin="33.031s" end="34.780s">while he happily munches away.</p>
+      <p begin="34.781s" end="38.880s">After he's done he grabs a coffee nearby to write his review.</p>
+      <p begin="38.881s" end="40.440s">When he opens his laptop</p>
+      <p begin="40.441s" end="44.350s">his photos and notes are automatically synced so he can jump right in.</p>
+      <p begin="44.351s" end="49.125s">He even remembers a picture he took in Italy that would be perfect for the story.</p>
+      <p begin="49.126s" end="51.130s">He knows it's not in his SkyDrive</p>
+      <p begin="51.131s" end="54.300s">but he can still fetch it from his PC at home.</p>
+      <p begin="54.301s" end="56.170s">Stephen finishes a draft</p>
+      <p begin="56.171s" end="57.600s">and shares it with his friends.</p>
+      <p begin="57.601s" end="59.460s">They make comments</p>
+      <p begin="59.461s" end="62.900s">and he wraps up the story and posts it for the world to see.</p>
+      <p begin="62.901s" end="67.510s">With SkyDrive Stephen can always find his files when he needs them.</p>
+      <p begin="67.511s" end="70.510s">If only it were that easy to find great pizza.</p>
+      <p begin="71.400s" end="72.800s">Microsoft SkyDrive.</p>
+      <p begin="72.801s" end="74.710s">Now you can access files from anywhere</p>
+      <p begin="74.711s" end="76.250s">share them with others</p>
+      <p begin="75.251s" end="77.920s">work together online</p>
+      <p begin="77.921s" end="80.580s">and even fetch things from your PC at home.</p>
+    </div>
+  </body>
+</tt>

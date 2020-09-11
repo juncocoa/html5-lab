@@ -1,0 +1,295 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"> 
+<html>
+<head>
+<title>HTML5 Video 3D</title> 
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<style type="text/css">
+	#output{
+		border-radius:30px;
+	}
+</style>
+<script type="text/javascript" language="javascript">
+//控件元素对象
+var video;
+var copy;
+var copycanvas;
+var draw;
+var time;
+var outputcanvas;
+//数学变量
+var RAD = Math.PI / 180;
+var randomJump = false;
+var debug = false;
+var degree = 180;
+var isEddy = true;
+var angle = 0;
+//构造体
+var SOURCERECT = { x: 0, y: 0, w: 0, h: 0 };
+var PAINTRECT = { x: 0, y: 0, w: 1000, h: 640 };
+
+//初始化对象函数
+function init(){
+	video = document.getElementById('sourcevid');
+	copycanvas = document.getElementById('sourcecopy');
+	copy = copycanvas.getContext('2d');
+	outputcanvas = document.getElementById('output');
+	draw = outputcanvas.getContext('2d');
+}
+//开始动画(true:旋转,false:不旋转)
+function beginCartoon(choice) {
+    //初始化宽和高
+    copycanvas.width = video.videoWidth;
+    copycanvas.height = video.videoHeight;
+	
+    if (choice) {
+        time = setInterval("processFrame()", 33);
+    } else if(choice == false){
+        time = setInterval("processFrameNoCartoon()", 33);
+    }
+    video.play();
+}
+//停止动画
+function stopCartoon() {
+	var btn = document.getElementById("btn");
+	if(btn.value == "暂停旋转"){
+		isEddy = false;
+		btn.value = "开始旋转";
+	}else if(btn.value == "开始旋转"){
+		isEddy = true;
+		btn.value = "暂停旋转";
+	}
+}
+function closeControls(){
+	clearInterval(time);
+    video.pause();
+    //outputcanvas.style.display = "none";
+}
+//播放控制
+function playControls() {
+    var btn = document.getElementById("btnControl");
+
+    if (btn.value == "暂停") {
+        video.pause();
+        btn.value = "播放";
+    } else if (btn.value == "播放") {
+        video.play();
+        btn.value = "暂停";
+    }
+}
+//不带动作的函数
+function processFrameNoCartoon() {
+    if (!isNaN(video.duration)) {
+        if (SOURCERECT.w == 0) {
+            SOURCERECT = { x: 0, y: 0, w: video.videoWidth, h: video.videoHeight };
+        }
+        //this is to keep my sanity while developing
+        if (randomJump) {
+            randomJump = false;
+            video.currentTime = Math.random() * video.duration;
+        }
+        //循环
+        if (video.currentTime == video.duration) {
+            video.currentTime = 0;
+        }
+    }
+    var debugStr = "";
+    copy.drawImage(video, 0, 0);
+    draw.clearRect(PAINTRECT.x, PAINTRECT.y, PAINTRECT.w, PAINTRECT.h);
+
+    var centerx = PAINTRECT.w / 2;
+    var centery = PAINTRECT.h / 2 - 50;
+    var radius = SOURCERECT.w / 2;
+
+    degree += 1;
+    degree %= 360;
+
+    //var angle = degree * RAD;
+    angle = 7;
+    var prepx = Math.cos(angle);
+    var prepz = Math.sin(angle);
+
+    var shadow1;
+    var shadow2;
+
+    draw.save();
+    var lineargradient = draw.createLinearGradient(0, 0, 0, PAINTRECT.h - centery);
+    lineargradient.addColorStop(0, '#CCCCCC');
+    lineargradient.addColorStop(1, '#FFFFFF');
+    draw.fillStyle = lineargradient;
+    draw.fillRect(0, centery, PAINTRECT.w, PAINTRECT.h - centery);
+    draw.restore();
+
+    for (var i = 0; i < SOURCERECT.w; i += 1) {
+        var dist = radius - i;
+        var x = prepx * dist;
+        var y = 0;
+        var z = prepz * dist;
+        var height = SOURCERECT.h + (z * 0.5);
+
+        draw.save();
+        
+        var _x = Math.round(x + centerx);
+        var _y = y + centery;
+        draw.drawImage(copycanvas, i, 0, 4, SOURCERECT.h, _x, _y - (height / 2), 4, height);
+        draw.restore();
+        if (i == 0) {
+            shadow1 = { x: _x, y: _y + (height * 1.4 / 2) };
+        } else if (i == SOURCERECT.w - 4) {
+            shadow2 = { x: _x, y: _y + (height * 1.4 / 2) };
+        }
+    }
+    //下面的底边虚线旋转算法
+    if (SOURCERECT.w != 0) {
+        draw.save();
+        
+        draw.shadowOffsetX = 0;
+        draw.shadowOffsetY = 0;
+        draw.shadowBlur = 7;
+        draw.shadowColor = "rgba(0, 0, 0, 1)";
+        draw.strokeStyle = "#DDDDDD";
+        draw.lineWidth = 1;
+        draw.beginPath();
+        draw.moveTo(shadow1.x, shadow1.y);
+        draw.lineTo(shadow2.x, shadow2.y);
+        draw.stroke();
+        draw.restore();
+    }
+
+    //调试信息，debug = false：不输出堆栈信息
+    if (debug) {
+        document.getElementById('trace').innerHTML = "degree:" + degree + ",angle:" + angle + "," + shadow1.x + "," + shadow1.y + "-" + shadow2.x + "," + shadow2.y;
+    }
+}
+//处理 Canvas 的帧数
+function processFrame() {
+	if(!isNaN(video.duration)){
+		if(SOURCERECT.w == 0){
+		    SOURCERECT = { x: 0, y: 0, w: video.videoWidth, h: video.videoHeight };
+		}
+		//this is to keep my sanity while developing
+		if(randomJump){
+			randomJump = false;
+			video.currentTime = Math.random()*video.duration;
+		}
+		//循环
+		if(video.currentTime == video.duration){
+			video.currentTime = 0;
+		}
+	}
+	var debugStr = "";
+	copy.drawImage(video, 0, 0);
+	draw.clearRect(PAINTRECT.x, PAINTRECT.y, PAINTRECT.w, PAINTRECT.h);
+	
+	var centerx = PAINTRECT.w/2;
+	var centery = PAINTRECT.h/2-50;
+	var radius = SOURCERECT.w/2;
+	
+	degree += 1;
+	degree %= 360;
+	
+	//暂停旋转
+	if(isEddy == true){
+		angle = degree*RAD;
+	}
+	var prepx = Math.cos(angle);
+	var prepz = Math.sin(angle);
+	
+	var shadow1;
+	var shadow2;
+	
+	draw.save();
+	var lineargradient = draw.createLinearGradient(0,0,0,PAINTRECT.h-centery);  
+	lineargradient.addColorStop(0,'#CCCCCC');  
+	lineargradient.addColorStop(1,'#FFFFFF'); 
+	draw.fillStyle = lineargradient;
+	draw.fillRect(0,centery,PAINTRECT.w,PAINTRECT.h-centery);
+	draw.restore();
+	
+	for(var i=0; i<SOURCERECT.w; i+=1){
+		var dist = radius-i;
+		var x = prepx*dist;
+		var y = 0;
+		var z = prepz*dist;
+		var height = SOURCERECT.h+(z*0.5);
+		
+		draw.save();
+		//视频旋转算法,isEddy 是否旋转
+		if(isEddy == true){
+			if(degree < 90 || degree > 270){
+				draw.translate(PAINTRECT.w, 0);
+				draw.scale(-1, 1);
+				x *= -1;
+			}
+		}
+		var _x = Math.round(x+centerx);
+		var _y = y+centery;
+		draw.drawImage(copycanvas, i, 0, 4, SOURCERECT.h, _x, _y-(height/2), 4, height);
+		draw.restore();
+		if(i == 0){
+			shadow1 = {x:_x, y:_y+(height*1.4/2)};
+		}else if(i == SOURCERECT.w-4){
+			shadow2 = {x:_x, y:_y+(height*1.4/2)};
+		}
+	}
+	//下面的底边虚线旋转算法
+	if(SOURCERECT.w != 0){
+		draw.save();
+		//视频旋转算法,isEddy 是否旋转
+		if(isEddy == true){
+			if(degree < 90 || degree > 270){
+				draw.translate(PAINTRECT.w, 0);
+				draw.scale(-1, 1);
+				x *= -1;
+			}
+		}
+		draw.shadowOffsetX = 0;  
+		draw.shadowOffsetY = 0;  
+		draw.shadowBlur = 7;  
+		draw.shadowColor = "rgba(0, 0, 0, 1)"; 
+		draw.strokeStyle = "#DDDDDD";
+		draw.lineWidth = 1;
+		draw.beginPath();
+		draw.moveTo(shadow1.x, shadow1.y);
+		draw.lineTo(shadow2.x, shadow2.y);
+		draw.stroke();
+		draw.restore();
+    }
+
+    //调试信息，debug = false：不输出堆栈信息
+	if(debug){
+	    document.getElementById('trace').innerHTML = "degree:" + degree + ",angle:" + angle + "," + shadow1.x + "," + shadow1.y + "-" + shadow2.x + "," + shadow2.y;
+	}
+}
+</script>
+</head>
+
+<body onload="init()" style="margin:0px;">
+	<div><br/><center>3D manipulation of HTML5 video, best viewed in webkit based browsers. <a href="http://www.craftymind.com/2010/04/20/blowing-up-html5-video-and-mapping-it-into-3d-space">Return to Craftymind Article</a><br/>Due to popular request, the ogg video is now 640 x 360, don't hold me responsible for crashing your browser ;)</center><br/></div>
+	<div style="display:none">
+		<video id="sourcevid" src="Bad Apple.mp4" loop="true">
+			<!--<source src="BigBuckBunny_640x360.mp4" type="video/mp4" />
+			<source src="src01_1920x1080_0.150.vp9" type="video/vp9"/>-->
+		</video>
+		<canvas id="sourcecopy"></canvas>
+	</div>
+	<div>
+		<center><canvas id="output" width="1000" height="640" style="border: dashed 5px #666666"></canvas><br/>You may need to reload the page if video isn't streaming properly. Video courtesy of <a href="http://www.bigbuckbunny.org/">Big Buck Bunny</a></center>
+	<br/><center><a href="http://web.me.com/ellestevenson/music/Digistore.html">You should listen to this new artist, seriously</a></center>
+	</div>
+	<input type="button" onclick="beginCartoon(true)" value="开始播放"/>
+    <input type="button" onclick="beginCartoon(false)" value="开始播放(不带旋转)"/>
+	<input type="button" id="btn" onclick="stopCartoon()" value="暂停旋转"/>
+    <input type="button" id="btnControl" onclick="playControls()" value="暂停"/>
+    <input type="button" onclick="closeControls()" value="关闭视频"/>
+	<div id="trace"></div>
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-15981974-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+﻿body   
+{
+    font-family: 'Segoe UI' , Verdana, Helvetica, Sans-Serif;
+    font-size: 10pt;
+    height: 100%;
+    background-color: white;
+    color: #424242;    
+}
+
+a:link, a:visited
+{
+    color: #034af3;
+}
+
+a:hover
+{
+    color: #1d60ff;
+    text-decoration: none;
+}
+
+a:active
+{
+    color: #034af3;
+}
+
+p
+{
+    margin-bottom: 10px;
+    line-height: 1.6em;
+}
+
+.content {margin-left:10px; margin-top:10px; background:#D6E6F3; width:1200px; height:820px; text-align:center; padding:20px;}
+p { height:30px; }
+
+.titleGrid {position:absolute;top:15px;left:110px;width:1020px;text-align:center;}
+.loginGrid {position:absolute;top:100px;left:110px;width:1020px;text-align:center;}
+.playerGrid {position:absolute;top:100px;left:110px;width:1020px;text-align:center;}
+
+.scoreGrid {position:absolute;top:90px;left:475px;width:315px;text-align:center;font-size: 16pt;font-weight:bold;}
+.home {float:left;width:150px;border:2px solid green;}
+.away {float:right;width:150px;border:2px solid orange;}
+
+.gameGrid {width:100%;}
+
+.leftGrid {float:left;}
+.rightGrid {float:right;}
+
+.leftTable {height:416px;width:540px;border:1px solid #606060;position:absolute;top:150px;left:67px;}
+.leftTable td {border:1px solid #C0C0C0;height:96px;width:128px;}
+
+.rightTable {height:412px;width:545px;border:1px solid #606060;position:absolute;top:150px;left:657px;}
+.rightTable td {border:1px solid #C0C0C0;height:97px;width:136px;}
+
+.tiles0 {cursor:move;position:absolute;top:153px;left:660px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+.tiles1 {cursor:move;position:absolute;top:153px;left:796px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+.tiles2 {cursor:move;position:absolute;top:153px;left:931px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+.tiles3 {cursor:move;position:absolute;top:153px;left:1066px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+.tiles4 {cursor:move;position:absolute;top:256px;left:660px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+.tiles5 {cursor:move;position:absolute;top:256px;left:796px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+.tiles6 {cursor:move;position:absolute;top:256px;left:931px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+.tiles7 {cursor:move;position:absolute;top:256px;left:1066px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+.tiles8 {cursor:move;position:absolute;top:359px;left:660px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+.tiles9 {cursor:move;position:absolute;top:359px;left:796px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+.tiles10 {cursor:move;position:absolute;top:359px;left:931px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+.tiles11 {cursor:move;position:absolute;top:359px;left:1066px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+.tiles12 {cursor:move;position:absolute;top:462px;left:660px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+.tiles13 {cursor:move;position:absolute;top:462px;left:796px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+.tiles14 {cursor:move;position:absolute;top:462px;left:931px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+.tiles15 {cursor:move;position:absolute;top:462px;left:1066px;border:2px solid #C0C0C0;z-index:0;padding:0px;}
+
+.gb {height:96px;width:129px;}
+
+.messageGrid {position:absolute;top:550px;left:400px;width:500px;height:231px;text-align:center;}
+.message {width:494px;height:174px;border:1px solid #606060;overflow:scroll;background-color:White;text-align:left;font-size:12pt}
+
+.imageGrid {position:absolute;top:603px;left:65px;border:1px solid #606060;}
+.image { width:240px;height:180px;}
+
+#status {
+  padding: 5px;
+  color: #fff;
+  background: #ccc;
+  text-align: center;
+  font-style: italic;
+  border-radius: 3px; 
+}
+
+#status.fail {
+  background: #c00;
+}
+
+#status.success {
+  background: #7cbc0a;
+  
+}
+
+#status.offline {
+  background: #c00;
+}
+
+#status.online {
+  background: #0c0;
+}
+
+#logInButton, #restartButton
+{
+  border-radius: 3px; 
+  padding: 8px;
+  vertical-align: middle;
+  font-size: 1em;
+  font-weight: bold;
+  font-family: Arial, Helvetica, Sans-Serif;
+  color: #ffffff;
+  cursor: pointer;
+  border: 0px solid #999999;
+  background: #9dd53a; /* old browsers */
+  background: -moz-linear-gradient(top, #9dd53a 0%, #a1d54f 50%, #80c217 51%, #7cbc0a 100%); /* firefox */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#9dd53a), color-stop(50%,#a1d54f), color-stop(51%,#80c217), color-stop(100%,#7cbc0a)); /* webkit */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#9dd53a', endColorstr='#7cbc0a',GradientType=0 ); /* ie */
+}
+
+#logInButton:hover, #restartButton:hover
+{
+  color: #517b05;
+  text-shadow: 1px 1px 1px #c5e38e;
+  filter: dropshadow(color=#c5e38e, offx=1, offy=1); 
+}
+
+#playerList 
+{
+  width: 300px;
+  margin: 0 auto;
+  text-align: left;
+  border: 1px solid #dddddd;
+  background: #eeeeee;
+  padding: 10px 10px 10px 30px;
+  border-radius: 3px; 
+}

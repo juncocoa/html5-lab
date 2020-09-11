@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test 视频</title>
+    <script type="text/javascript">
+        var SOURCERECT = { x: 0, y: 0, w: 0, h: 0 };
+        var PAINTRECT = { x: 0, y: 0, w: 1000, h: 640 };
+        var video; var copycanvas;
+
+        function Load() {
+            video = document.getElementById("sourcevid");
+            video.onloadeddata = function () {
+                copycanvas = document.getElementById('sourcecopy').getContext("2d");
+                if (SOURCERECT.w == 0) {
+                    SOURCERECT = { x: 0, y: 0, w: video.videoWidth, h: video.videoHeight };
+                }
+                copycanvas.drawImage(video, 0, 0, SOURCERECT.w, SOURCERECT.h, 0, 0, 300, 150);
+                copycanvas.restore();
+            }
+            video.onplay = function () {
+                //非 IE 浏览器，没有执行 onloadeddata 事件
+                if (copycanvas == undefined) {
+                    copycanvas = document.getElementById('sourcecopy').getContext("2d");
+                    if (SOURCERECT.w == 0) {
+                        SOURCERECT = { x: 0, y: 0, w: video.videoWidth, h: video.videoHeight };
+                    }
+                }
+                //1.方法 1
+                time = setInterval(function () {
+                    copycanvas.drawImage(video, 0, 0, SOURCERECT.w, SOURCERECT.h, 0, 0, 300, 150);
+                    copycanvas.restore();
+                }, 33);
+                //1.方法 2
+                //time = setInterval(function () {
+                //    setImmediate(function () {
+                //        copycanvas.drawImage(video, 0, 0, SOURCERECT.w, SOURCERECT.h, 0, 0, 300, 150);
+                //        copycanvas.restore();
+                //    });
+                //}, 33);
+            }
+        }
+    </script>
+    <style type="text/css">
+        .canvas{
+            width:178px; height:122px; border:1px dashed gray;border-radius:5px;box-shadow:0px 0px 16px black;margin-left:5px;
+            transition:transform 3s;
+            transform:rotate3d(0,0,0,0deg);
+        }
+        .canvas:hover{
+            width:178px; height:122px; border:1px dashed gray;border-radius:5px;box-shadow:0px 0px 16px black;margin-left:5px;
+            transition:transform 3s;
+            transform:rotate3d(0,60,120,120deg);
+        }
+    </style>
+</head>
+<body onload="Load()">
+    <video id="sourcevid" src="Skydrive.h.264.mp4" loop="true" controls="controls" style="border:1px dashed gray;border-radius:5px;box-shadow:0px 0px 16px black;">
+        <track kind="captions" src="Chinese.vtt" srclang="zh-cn" default label="中 文（简体 VTT）" />
+    </video>
+    <canvas id="sourcecopy" class="canvas" style=""></canvas>
+</body>
+</html>

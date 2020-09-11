@@ -1,0 +1,198 @@
+﻿<!--<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">-->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HTML5 Froms</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+
+    <style type="text/css">
+        table {
+            margin-bottom:10px;
+        }
+        td {
+            border:1px solid #b200ff
+        }
+        .label {
+            text-align:right;
+        }
+        .title {
+            text-align:center;
+            font-size:larger;
+        }
+    </style>
+</head>
+
+<body>
+    <center>
+    <div id="divEditable">
+    <table border="0" width="680px" cellpadding="5" cellspacing="0">
+        <tr>
+            <td colspan="2" class="title">HTML5 Froms Demo</td>
+        </tr>
+        <tr>
+            <td colspan="2" class="title">
+                <input id="btnEditable" type="button" value="编辑网页" onclick="editable()" />
+                &nbsp;&nbsp;&nbsp;<input id="btnDraggable" type="button" value="固定视频" onclick="funDraggable()" />
+            </td>
+        </tr>
+        <tr>
+            <td class="label">本地数据绑定：</td>
+            <td class><input id="cake12" type="text" maxlength="50" name="cakeMessage" list="messages" /></td>
+        </tr>
+        <tr>
+            <td class="label">URL 字段：</td>
+            <td><input type="url" placeholder="请输入 URL 地址..." /></td>
+        </tr>
+        <tr>
+            <td class="label">Email 字段：</td>
+            <td><input type="email" placeholder="请输入 Email 地址..." /></td>
+        </tr>
+        <tr>
+            <td class="label">电话号码：</td>
+            <td><input type="tel" name="user_time" placeholder="请输入 Phone 号码..."/></td>
+        </tr>
+        <tr>
+            <td class="label">搜索字段：</td>
+            <td><input type="search" name="user_time" placeholder="请输入 Search 关键字..."/></td>
+        </tr>
+        <tr>
+            <td class="label">本地时间：</td>
+            <td><input type="datetime-local" ></td>
+        </tr>
+        <tr>
+            <td class="label">数字字段：</td>
+            <td><input type="number" min="0" max="50"></td>
+        </tr>
+        <tr>
+            <td class="label">文件多选：</td>
+            <td><input type="file" multiple></td>
+        </tr>
+        <tr>
+            <td class="label">滑动条：</td>
+            <td><input type="range" name="points" min="1" max="100" required="required" /></td>
+        </tr>
+        <tr>
+            <td class="label">时间字段：</td>
+            <td><input type="time" name="user_time" /></td>
+        </tr>
+        <tr>
+            <td class="label">日期字段：</td>
+            <td><input type="date" name="user_date" /></td>
+        </tr>
+        <tr>
+            <td class="label">星期字段：</td>
+            <td><input type="week" name="user_time" /></td>
+        </tr>
+        <tr>
+            <td class="label">月份字段：</td>
+            <td><input type="month" name="user_time" /></td>
+        </tr>
+        <tr>
+            <td class="label">颜色字段：</td>
+            <td><input type="color"></td>
+        </tr>
+        <tr>
+            <td class="label">安全加密：</td>
+            <td><keygen name="security" /></td>
+        </tr>
+        <tr>
+            <td class="label">进度条：</td>
+            <td>
+                <progress name="prog" max="100" value="40">
+                    <span id="objprogress">85</span>%
+                </progress>
+            </td>
+        </tr>
+        <tr>
+            <td class="label">HTML5 视频：</td>
+            <td>
+                <video id="videoHTML5" autoplay="autoplay" width="320" height="240" controls="controls" draggable="true">
+                    <track kind="captions" src="English.vtt" srclang="en-us" label="English（VTT）" />
+                    <track kind="captions" src="English.ttml" srclang="en-us" label="English（TTML）" />
+                    <track kind="captions" src="Chinese.vtt" srclang="en-us" label="中 文（简体 VTT）" />
+                    <source src="MVI_01.ogg" type="video/ogg">
+                    <source src="MVI_01.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </td>
+        </tr>
+        <tr>
+            <td class="label">HTML5 音频：</td>
+            <td>
+                <audio id="audioOgg" src="江山 - 狼爱错羊.ogg" controls="controls" loop="true" style="display:none;">
+                    Your browser does not support the audio tag.
+                </audio>
+                <audio id="audioMP3" src="江山 - 狼爱错羊.mp3" controls="controls" loop="true" style="display:none;">
+                    Your browser does not support the audio tag.
+                </audio>
+            </td>
+        </tr>
+        <tr>
+            <td class="label">HTML5 Canvas：</td>
+            <td>
+                <canvas id="myCanvas" width="200" height="100"></canvas>
+            </td>
+        </tr>
+    </table>
+    </div>
+    <output id="result" onforminput="resCalc()">&copy;2012 HTML5 Froms All Rights Reserved Microsoft Corp.</output>
+
+    <datalist id="messages" style="display: none;">
+        <option>Happy Birthday!</option>
+        <option>Happy Birthday Susan!</option>
+        <option>Congratulations Graduate!</option>
+        <option>Welcome Home!</option>
+    </datalist>
+
+    <script type="text/javascript">
+        var c = document.getElementById("myCanvas");
+        var cxt = c.getContext("2d");
+        var grd = cxt.createLinearGradient(0, 20, 175, 100);
+        grd.addColorStop(0, "#FF0000");
+        grd.addColorStop(0.5, "#00FF00");
+        grd.addColorStop(1, "#0000FF");
+        cxt.fillStyle = grd;
+        cxt.fillRect(0, 0, 175, 100);
+    </script>
+    
+    <center>
+    <script type="text/javascript">
+        var UA = navigator.userAgent.toLowerCase();
+        if (UA.indexOf('msie') > -1) {
+            //Internet Explorer
+            document.getElementById("audioMP3").style.display = "inline";
+        } else if (UA.indexOf('chrome') > -1) {
+            //Chrome
+            document.getElementById("audioOgg").style.display = "inline";
+        } else if (UA.indexOf('firefox') > -1) {
+            //Firefox
+            document.getElementById("audioOgg").style.display = "inline";
+        } else if (UA.indexOf('opera') > -1) {
+            //Opera
+            document.getElementById("audioOgg").style.display = "inline";
+        } else if (UA.indexOf('safari') > -1) {
+            //Safari
+            document.getElementById("audioMP3").style.display = "inline";
+        }
+        function editable() {
+            if (document.getElementById("btnEditable").value == "编辑网页") {
+                document.getElementById("btnEditable").value = "固定网页";
+                document.getElementById("divEditable").setAttribute("contenteditable");
+            } else {
+                document.getElementById("btnEditable").value = "编辑网页";
+                document.getElementById("divEditable").removeAttribute("contenteditable");
+            }
+        }
+        function funDraggable() {
+            if (document.getElementById("btnDraggable").value == "拖拽视频") {
+                document.getElementById("btnDraggable").value = "固定视频";
+                document.getElementById("videoHTML5").setAttribute("draggable", "true");
+            } else {
+                document.getElementById("btnDraggable").value = "拖拽视频";
+                document.getElementById("videoHTML5").removeAttribute("draggable");
+            }
+        }
+    </script>
+</body>
+</html>

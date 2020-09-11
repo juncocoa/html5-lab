@@ -1,0 +1,16 @@
+﻿
+body{
+    text-align:center;
+    padding-top:100px;
+    padding-left:100px;
+}
+.div {
+    margin-top: 0px;
+    opacity: 0;
+    background-color: gray;
+    width: 300px;
+    transition: opacity 2s,margin-top 2s,margin-left 2s,width 2s,height 2s,transform 2s;
+    transform: perspective(500px) rotateY(0deg);
+
+    box-shadow: 0 0 50px black;
+}
